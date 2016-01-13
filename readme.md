@@ -1,12 +1,11 @@
 # Darkstone Trainer
 
-[![ScreenShot](http://img.youtube.com/vi/OIiZ2VKTrnU/0.jpg)](https://www.youtube.com/watch?v=OIiZ2VKTrnU)
+[![Video of trainer in action](http://img.youtube.com/vi/OIiZ2VKTrnU/0.jpg)](https://www.youtube.com/watch?v=OIiZ2VKTrnU)
 
 A Darkstone trainer written in C++ compatible with Darkstone version 1.05b. 
 
 1. [Compilation](#compilation)
 1. [Usage](#usage)
-1. [Credits](#credits)
 
 ##Compilation/Execution
 
