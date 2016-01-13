@@ -28,6 +28,9 @@ Trainer::Trainer()
 
 void Trainer::showTrainerMenu()
 {
+    if (hwnd == 0)
+        return;
+
     int selection = -1;
     while (selection != 0)
     {
@@ -100,6 +103,9 @@ void Trainer::setCharacterStats()
 
 void Trainer::setValue(LPVOID address, LPVOID offset, short int value)
 {
+    if (hwnd == 0)
+        return;
+
     if (WriteProcessMemory(hProcess, (LPVOID)((unsigned int)address + (unsigned int)offset), &value, sizeof(value), NULL))
     {
         cout << "Value was written successfully." << endl;
