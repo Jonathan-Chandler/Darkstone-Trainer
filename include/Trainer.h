@@ -23,6 +23,8 @@ class Trainer
         void setValue(LPVOID address, LPVOID offset, short int value);
         void setCharacterStats();
         void setWeaponStats();
+        void setCharacterSkills();
+        void setCharacterSpells();
 };
 
 #endif // TRAINER_H
