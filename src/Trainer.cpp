@@ -5,10 +5,18 @@
 #include <windows.h>
 
 using namespace std;
+#if defined(STEAM) && defined(GOG)
+  #error "Select either Steam or GOG as trainer target"
+#endif
 
 Trainer::Trainer()
 {
-  gameTitle = "DarkStone DSI";
+#if defined(GOG)
+  gameTitle = "DarkStone DSI";  // GOG 1.05B
+#endif
+#if defined(STEAM)
+  gameTitle = "DarkStone";      // Steam
+#endif
   hwnd = FindWindow(0, gameTitle);
 
   if (hwnd == 0)
@@ -68,7 +76,12 @@ void Trainer::setCharacterStats()
 {
   unsigned int stat = 1;
   short int value = -1;
-  LPVOID characterAddress = (LPVOID)0x00AF9F4E;
+#if defined(GOG)
+  LPVOID characterAddress = (LPVOID)0x00AF9F4E; // GOG 1.05B
+#endif
+#if defined(STEAM)
+  LPVOID characterAddress = (LPVOID)0x00AFA0FE; // Steam
+#endif
   LPVOID characterStatOffset[] = 
   {
     (LPVOID)0x58,
@@ -115,7 +128,12 @@ void Trainer::setCharacterSpells()
 {
   unsigned int stat = 1;
   short int value = -1;
-  LPVOID spellAddress = (LPVOID)0x00AFA034;
+#if defined(GOG)
+  LPVOID spellAddress = (LPVOID)0x00AFA034; // GOG 1.05B
+#endif
+#if defined(STEAM)
+  LPVOID spellAddress = (LPVOID)0x00AFA1E4; // Steam
+#endif
   LPVOID spellAddressOffset[] = 
   {
     (LPVOID)0x000,   //  1: confusion
@@ -301,7 +319,12 @@ void Trainer::setWeaponStats()
 {
   unsigned int stat = 1;
   short int value = 101;
-  LPVOID weaponAddress = (LPVOID)0x00AFB8AC;
+#if defined(GOG)
+  LPVOID weaponAddress = (LPVOID)0x00AFB8AC;  // GOG 1.05B
+#endif
+#if defined(STEAM)
+  LPVOID weaponAddress = (LPVOID)0x00AFBA5C;  // Steam
+#endif
   LPVOID weaponStatOffset[] = 
   {
     (LPVOID)0x0,
