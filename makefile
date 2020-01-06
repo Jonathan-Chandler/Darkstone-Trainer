@@ -14,7 +14,8 @@ LIBRARY_PATHS =
 # -w suppresses all warnings
 # -Wl,-subsystem,windows gets rid of the console window
 #COMPILER_FLAGS = -w -Wl,-subsystem,windows
-COMPILER_FLAGS = -Wall -std=c++11
+# COMPILER_FLAGS = -Wall -std=c++11 -static-libgcc
+COMPILER_FLAGS = -static-libgcc -static-libstdc++ -Wl,-Bstatic -lgcc -lstdc++
 
 #LINKER_FLAGS specifies the libraries we're linking against
 LINKER_FLAGS = 
