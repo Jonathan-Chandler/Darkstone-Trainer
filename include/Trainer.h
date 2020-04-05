@@ -1,30 +1,28 @@
 #ifndef TRAINER_H
 #define TRAINER_H
-#include <string>
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream>
 #include <windows.h>
-#include <map>
-#include <utility>
 
-class Trainer
+typedef struct
 {
-    public:
-        Trainer();
-        void showTrainerMenu();
-    protected:
-    private:
-        LPCSTR gameTitle = "DarkStone DSI";
-        HWND hwnd = FindWindow(0, gameTitle);
-        DWORD process_ID;
-        HANDLE hProcess;
+  LPCSTR  game_title;
+  HWND    window_handle;
+  DWORD   process_id;
+  HANDLE  process_handle;
 
-        void setValue(LPVOID address, LPVOID offset, short int value);
-        void setCharacterStats();
-        void setWeaponStats();
-        void setCharacterSkills();
-        void setCharacterSpells();
-};
+  LPVOID  weapon_address;
+  LPVOID  char_address;
+  LPVOID  spell_address;
+} trainer_data_t;
+
+void trainer_initialize(trainer_data_t *trainer);
+void trainer_show_menu(trainer_data_t *trainer);
+void trainer_set_weapon_stats(trainer_data_t *trainer);
+void trainer_set_char_stats(trainer_data_t *trainer);
+void trainer_set_char_skills(trainer_data_t *trainer);
+void trainer_set_char_spells(trainer_data_t *trainer);
+void trainer_show_inventory(trainer_data_t *trainer);
 
 #endif // TRAINER_H
