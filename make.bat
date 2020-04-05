@@ -1,3 +1,3 @@
 rm *.exe
-rm -r obj
+call mingw32-make clean
 call mingw32-make
