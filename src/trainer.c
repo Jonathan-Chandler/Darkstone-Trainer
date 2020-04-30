@@ -1,4 +1,5 @@
 #include "trainer.h"
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -21,26 +22,6 @@ static uint8_t null_item[ITEM_STRUCT_SIZE] = {0};
 
 void trainer_initialize(trainer_data_t *trainer)
 {
-//#if defined(STEAM) && defined(GOG) || (!defined(STEAM) && !defined(GOG))
-//  // either both targets selected or neither was selected
-//  #error "Select either Steam or GOG as trainer target"
-//#elif defined(GOG)          // Good Old Games 1.05B offsets
-//  LPCSTR  game_title;
-//  trainer->game_title = "DarkStone DSI";
-//  trainer->equip_address = (LPVOID)0x00AFAE54;
-//  trainer->inventory_address = (LPVOID)0x00AFBE6C;
-//  trainer->inventory_map_address = (LPVOID)0x00B0121C;
-//  trainer->char_address = (LPVOID)0x00AF9F4E;
-//  trainer->spell_address = (LPVOID)0x00AFA034;
-//#elif defined(STEAM)        // Steam offsets +0x1B0
-//  trainer->game_title = "DarkStone";
-//  trainer->equip_address = (LPVOID)0x00AFBA5C;
-//  trainer->inventory_address = (LPVOID)0x00AFC01C;
-//  trainer->inventory_map_address = (LPVOID)0x00B013CC;
-//  trainer->char_address = (LPVOID)0x00AFA0FE;
-//  trainer->spell_address = (LPVOID)0x00AFA1E4;
-//#endif
-
   if ((trainer->window_handle = FindWindow(0, "DarkStone DSI")) != 0)
   {
     // Good Old Games 1.05B offsets
@@ -49,6 +30,7 @@ void trainer_initialize(trainer_data_t *trainer)
     trainer->inventory_map_address = (LPVOID)0x00B0121C;
     trainer->char_address = (LPVOID)0x00AF9F4E;
     trainer->spell_address = (LPVOID)0x00AFA034;
+    trainer->cursor_item_address = (LPVOID)0x009BC2A8;
   }
   else if ((trainer->window_handle = FindWindow(0, "DarkStone")) != 0)
   {
@@ -67,16 +49,16 @@ void trainer_initialize(trainer_data_t *trainer)
   }
   
   printf("Successfully connected to Darkstone process\n");
-  DEBUG_PRINT("window_handle = %d\n", trainer->window_handle);
+  DEBUG_PRINT("window_handle = %p\n", trainer->window_handle);
 
   GetWindowThreadProcessId(trainer->window_handle, &trainer->process_id);
-  DEBUG_PRINT("process_id = %d\n", trainer->process_id);
+  DEBUG_PRINT("process_id = %lu\n", trainer->process_id);
 
   // kernel32
   trainer->process_handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, trainer->process_id);
-  DEBUG_PRINT("process_handle = %d\n", trainer->process_handle);
-  DEBUG_PRINT("all-access=%x\n",PROCESS_ALL_ACCESS);
-  DEBUG_PRINT("all-access-dec=%d\n",PROCESS_ALL_ACCESS);
+  DEBUG_PRINT("process_handle = %p\n", trainer->process_handle);
+  DEBUG_PRINT("all-access=%lX\n",PROCESS_ALL_ACCESS);
+  DEBUG_PRINT("all-access-dec=%lu\n",PROCESS_ALL_ACCESS);
 }
 
 void trainer_destroy(trainer_data_t *trainer)
@@ -85,7 +67,7 @@ void trainer_destroy(trainer_data_t *trainer)
 
   if (trainer->process_handle)
   {
-    DEBUG_PRINT("Closing process handle: %x\n", trainer->process_handle);
+    DEBUG_PRINT("Closing process handle: %p\n", trainer->process_handle);
     CloseHandle(trainer->process_handle);
   }
 
@@ -119,7 +101,7 @@ static void trainer_set_value(trainer_data_t *trainer, LPVOID address, LPVOID of
     return;
   }
 
-  if (WriteProcessMemory(trainer->process_handle, (LPVOID)((unsigned int)address + (unsigned int)offset), &value, sizeof(value), NULL))
+  if (WriteProcessMemory(trainer->process_handle, (LPVOID)((UINT_PTR)address + (UINT_PTR)offset), &value, sizeof(value), NULL))
   {
     DEBUG_PRINT("Value was written successfully.\n");
   }
@@ -148,17 +130,6 @@ static void trainer_block_to_item(item_t *item, uint8_t *mem_block)
   memcpy(&item->y_loc, &mem_block[item_offset_y_loc], sizeof(item->y_loc));
 }
 
-static void trainer_block_to_inventory_map(inventory_t *map, uint8_t *mem_block)
-{
-  for (int y = 0; y < INVENTORY_HEIGHT; y++)
-  {
-    for (int x = 0; x < INVENTORY_WIDTH; x++)
-    {
-      map->inventory_map[x][y] = mem_block[x+y*INVENTORY_HEIGHT];
-    }
-  }
-}
-
 static void trainer_get_value(trainer_data_t *trainer, LPVOID address, LPVOID offset, uint8_t *value_addr, size_t value_size)
 {
   if (trainer->process_handle == 0)
@@ -167,7 +138,18 @@ static void trainer_get_value(trainer_data_t *trainer, LPVOID address, LPVOID of
     return;
   }
 
-  if (ReadProcessMemory(trainer->process_handle, (LPVOID)((unsigned int)address + (unsigned int)offset), value_addr, value_size, NULL))
+//   BOOL ReadProcessMemory(
+//   HANDLE  hProcess,
+//   LPCVOID lpBaseAddress,
+//   LPVOID  lpBuffer,
+//   SIZE_T  nSize,
+//   SIZE_T  *lpNumberOfBytesRead
+// );
+  // typedef PVOID HANDLE; -> typedef void *PVOID;
+  // HANDLE LPCVOID LPVOID SIZE_T SIZE_T
+  // typedef CONST void *LPCVOID;
+  // typedef void *LPVOID;
+  if (ReadProcessMemory(trainer->process_handle, (LPVOID)((UINT_PTR)address + (UINT_PTR)offset), value_addr, value_size, NULL))
   {
     // DEBUG_PRINT("Value was read successfully.\n");
   }
@@ -403,8 +385,8 @@ void trainer_set_char_spells(trainer_data_t *trainer)
 
       // Also reset the remaining buff timer when changing any skill/spell
       uint8_t timer_remaining[4] = {0};
-      trainer_set_block(trainer, (LPVOID)((uint32_t)trainer->spell_address + (uint32_t)spellAddressOffset[spell-1]) + SPELL_TIMER_OFFSET, timer_remaining, sizeof(timer_remaining));
-      DEBUG_PRINT("Timer address: %x\n",(LPVOID)((uint32_t)trainer->spell_address + (uint32_t)spellAddressOffset[spell-1]) + SPELL_TIMER_OFFSET);
+      trainer_set_block(trainer, (LPVOID)((UINT_PTR)trainer->spell_address + (UINT_PTR)spellAddressOffset[spell-1]) + SPELL_TIMER_OFFSET, timer_remaining, sizeof(timer_remaining));
+      DEBUG_PRINT("Timer address: %p\n",(LPVOID)((UINT_PTR)trainer->spell_address + (UINT_PTR)spellAddressOffset[spell-1]) + SPELL_TIMER_OFFSET);
     }
     else if (spell != 0)
     {
@@ -507,8 +489,8 @@ void trainer_set_char_skills(trainer_data_t *trainer)
 
       // Also reset the remaining buff timer when changing any skill/spell
       uint8_t timer_remaining[4] = {0};
-      trainer_set_block(trainer, (LPVOID)((uint32_t)trainer->spell_address + (uint32_t)skillAddressOffset[skill-1]) + SPELL_TIMER_OFFSET, timer_remaining, sizeof(timer_remaining));
-      DEBUG_PRINT("Timer address: %x\n",(LPVOID)((uint32_t)trainer->spell_address + (uint32_t)skillAddressOffset[skill-1]) + SPELL_TIMER_OFFSET);
+      trainer_set_block(trainer, (LPVOID)((UINT_PTR)trainer->spell_address + (UINT_PTR)skillAddressOffset[skill-1]) + SPELL_TIMER_OFFSET, timer_remaining, sizeof(timer_remaining));
+      DEBUG_PRINT("Timer address: %p\n",(LPVOID)((UINT_PTR)trainer->spell_address + (UINT_PTR)skillAddressOffset[skill-1]) + SPELL_TIMER_OFFSET);
     }
     else if (skill != 0)
     {
@@ -522,16 +504,16 @@ void trainer_inventory_delete_item_name(trainer_data_t *trainer, char *item_name
   LPVOID item_offset = 0;
   item_t temp_item = {0};
 
-  for (unsigned i = 0; i < MAX_ITEM_COUNT; i++)
+  for (UINT_PTR i = 0; i < MAX_ITEM_COUNT; i++)
   {
     item_offset = (LPVOID)(i * ITEM_STRUCT_SIZE);
-    LPVOID item_address = (uint32_t)trainer->inventory_address + item_offset;
+    LPVOID item_address = (UINT_PTR)trainer->inventory_address + item_offset;
     trainer_get_value(trainer, trainer->inventory_address, item_offset, (uint8_t*)&temp_item, sizeof(temp_item));
 
     if (strcmp(temp_item.name1, item_name) == 0)
     {
       trainer_set_block(trainer, item_address, null_item, ITEM_STRUCT_SIZE);
-      printf("Deleted %s at item index %d\n", item_name, i);
+      printf("Deleted %s at item index %"PRId64"\n", item_name, i);
     }
   }
 }
@@ -560,7 +542,7 @@ void trainer_get_inventory(trainer_data_t *trainer)
   item_t temp_item = {0};
   uint8_t item_block[ITEM_STRUCT_SIZE] = {0};
 
-  for (unsigned i = 0; i < MAX_ITEM_COUNT; i++)
+  for (UINT_PTR i = 0; i < MAX_ITEM_COUNT; i++)
   {
     item_offset = (LPVOID)(i * ITEM_STRUCT_SIZE);
     trainer_get_value(trainer, trainer->inventory_address, item_offset, item_block, sizeof(item_block));
@@ -568,46 +550,12 @@ void trainer_get_inventory(trainer_data_t *trainer)
     
     if (temp_item.name1[0])
     {
-      printf("id: %d\n", i);
+      printf("id: %"PRId64"\n", i);
       printf("Item name: %s\n", temp_item.name1);
       printf("Item name2: %s\n", temp_item.name2);
       printf("Item name3: %s\n", temp_item.name3);
       printf("Sprite_name: %s\n", temp_item.sprite);
       printf("Gold count: %i\n", temp_item.gold);
-      printf("Min dmg: %i\n", temp_item.min_dmg);
-      printf("Max dmg: %i\n", temp_item.max_dmg);
-      printf("Spell effect: %i\n", temp_item.spell_effect);
-      printf("Physical effect: %i\n", temp_item.phys_effect);
-      printf("Armour: %i\n", temp_item.armour);
-      printf("Percent hit: %i\n", temp_item.percent_hit);
-      printf("Percent armour: %i\n", temp_item.percent_armour);
-      printf("Spell ID: %i\n", temp_item.spell_increase);
-      printf("X: %i\n", temp_item.x_loc);
-      printf("Y: %i\n", temp_item.y_loc);
-    }
-  }
-}
-
-void trainer_get_equip_stats(trainer_data_t *trainer)
-{
-  LPVOID item_offset = 0;
-  item_t temp_item = {0};
-  uint8_t item_block[ITEM_STRUCT_SIZE] = {0};
-
-  for (unsigned i = 0; i < EQUIP_COUNT; i++)
-  {
-    item_offset = (LPVOID)(i * ITEM_STRUCT_SIZE);
-    trainer_get_value(trainer, trainer->equip_address, item_offset, (uint8_t*)item_block, sizeof(item_block));
-    trainer_block_to_item(&temp_item, item_block);
-    
-    if (temp_item.name1[0])
-    {
-      printf("id: %d\n", i);
-      printf("Item name: %s\n", temp_item.name1);
-      printf("Item name2: %s\n", temp_item.name2);
-      printf("Item name3: %s\n", temp_item.name3);
-      printf("Sprite_name: %s\n", temp_item.sprite);
-      printf("Gold count (sale price): %i\n", temp_item.gold);
       printf("Min dmg: %i\n", temp_item.min_dmg);
       printf("Max dmg: %i\n", temp_item.max_dmg);
       printf("Spell effect: %i\n", temp_item.spell_effect);
@@ -684,7 +632,7 @@ void trainer_get_inventory_loc(trainer_data_t *trainer, uint8_t x, uint8_t y)
   item_t temp_item = {0};
   uint8_t item_block[ITEM_STRUCT_SIZE] = {0};
 
-  for (unsigned i = 0; i < MAX_ITEM_COUNT; i++)
+  for (UINT_PTR i = 0; i < MAX_ITEM_COUNT; i++)
   {
     item_offset = (LPVOID)(i * ITEM_STRUCT_SIZE);
     trainer_get_value(trainer, trainer->inventory_address, item_offset, item_block, sizeof(item_block));
@@ -709,3 +657,85 @@ void trainer_get_inventory_loc(trainer_data_t *trainer, uint8_t x, uint8_t y)
   }
 }
 
+void trainer_get_equip_stats(trainer_data_t *trainer)
+{
+  LPVOID item_offset = 0;
+  item_t temp_item = {0};
+  uint8_t item_block[ITEM_STRUCT_SIZE] = {0};
+
+  for (UINT_PTR i = 0; i < EQUIP_COUNT; i++)
+  {
+    item_offset = (LPVOID)(i * ITEM_STRUCT_SIZE);
+    trainer_get_value(trainer, trainer->equip_address, item_offset, (uint8_t*)item_block, sizeof(item_block));
+    trainer_block_to_item(&temp_item, item_block);
+    
+    if (temp_item.name1[0])
+    {
+      printf("id: %"PRId64"\n", i);
+      printf("Item name: %s\n", temp_item.name1);
+      printf("Item name2: %s\n", temp_item.name2);
+      printf("Item name3: %s\n", temp_item.name3);
+      printf("Sprite_name: %s\n", temp_item.sprite);
+      printf("Gold count (sale price): %i\n", temp_item.gold);
+      printf("Min dmg: %i\n", temp_item.min_dmg);
+      printf("Max dmg: %i\n", temp_item.max_dmg);
+      printf("Spell effect: %i\n", temp_item.spell_effect);
+      printf("Physical effect: %i\n", temp_item.phys_effect);
+      printf("Armour: %i\n", temp_item.armour);
+      printf("Percent hit: %i\n", temp_item.percent_hit);
+      printf("Percent armour: %i\n", temp_item.percent_armour);
+      printf("Spell ID: %i\n", temp_item.spell_increase);
+      printf("X: %i\n", temp_item.x_loc);
+      printf("Y: %i\n", temp_item.y_loc);
+    }
+  }
+}
+
+//static void trainer_block_to_inventory_map(inventory_t *map, uint8_t *mem_block)
+//{
+//  for (int y = 0; y < INVENTORY_HEIGHT; y++)
+//  {
+//    for (int x = 0; x < INVENTORY_WIDTH; x++)
+//    {
+//      map->inventory_map[x][y] = mem_block[x+y*INVENTORY_HEIGHT];
+//    }
+//  }
+//}
+//
+//void trainer_get_equip_stats(trainer_data_t *trainer, char *item_name)
+//{
+//  LPVOID item_offset = 0;
+//  item_t temp_item = {0};
+//
+//  for (unsigned i = 0; i < MAX_ITEM_COUNT; i++)
+//  {
+//    item_offset = (LPVOID)(i * ITEM_STRUCT_SIZE);
+//    LPVOID item_address = (uint32_t)trainer->inventory_address + item_offset;
+//    trainer_get_value(trainer, trainer->inventory_address, item_offset, (uint8_t*)&temp_item, sizeof(temp_item));
+//
+//    if (strcmp(temp_item.name1, item_name) == 0)
+//    {
+//      trainer_set_block(trainer, item_address, null_item, ITEM_STRUCT_SIZE);
+//      printf("Deleted %s at item index %d\n", item_name, i);
+//    }
+//  }
+//}
+//
+//void trainer_set_equip_stats(trainer_data_t *trainer)
+//{
+//  LPVOID item_offset = 0;
+//  item_t temp_item = {0};
+//
+//  for (UINT_PTR i = 0; i < MAX_ITEM_COUNT; i++)
+//  {
+//    item_offset = (LPVOID)(i * ITEM_STRUCT_SIZE);
+//    LPVOID item_address = (uint32_t)trainer->inventory_address + item_offset;
+//    trainer_get_value(trainer, trainer->inventory_address, item_offset, (uint8_t*)&temp_item, sizeof(temp_item));
+//
+//    if (strcmp(temp_item.name1, item_name) == 0)
+//    {
+//      trainer_set_block(trainer, item_address, null_item, ITEM_STRUCT_SIZE);
+//      printf("Deleted %s at item index %d\n", item_name, i);
+//    }
+//  }
+//}

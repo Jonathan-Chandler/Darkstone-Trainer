@@ -4,9 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
-#include "stdint.h"
+#include <stdint.h>
 
-// #define DEBUG_MODE
+//#define DEBUG_MODE
 
 #ifdef DEBUG_MODE
 #define DEBUG_PRINT(...) printf("%s:%d: ",__FILE__, __LINE__); printf(__VA_ARGS__)
@@ -25,6 +25,7 @@ typedef struct
   LPVOID  inventory_map_address;
   LPVOID  char_address;
   LPVOID  spell_address;
+  LPVOID  cursor_item_address;
 } trainer_data_t;
 
 enum 
@@ -69,29 +70,6 @@ enum
   EQUIP_COUNT,
 };
 
-//typedef struct 
-//{
-//  char item_name1[0x20];                // 0x000
-//  char item_name2[0x20];                // 0x020
-//  char item_name3[0x20];                // 0x040
-//  char fill1[6];                        // 0x060
-//  char sprite_name[0x10];               // 0x066
-//  char fill2[0x36];                     // 0x076
-//  int32_t gold;                         // 0x0AC
-//  int16_t min_dmg;                      // 0x0B0
-//  int16_t max_dmg;                      // 0x0B2
-//  uint16_t armour;                      // 0x0B4
-//  char fill_8[8];                       // 0x0B6
-//  int16_t  percent_hit;                 // 0x0BE
-//  int16_t  percent_armor;               // 0x0C0
-////  char fill4[0xC6];                     // 0x0C0
-//  char fill5[0xBA];                     // 0x0C2
-//  uint8_t x_loc;                        // 0x17C
-//  char fill6[0x3];                      // 0x17D
-//  uint8_t y_loc;                        // 0x180
-//  char fill7[0x1B];                     // 0x181
-//} item_t;                               // 0x19C (412 d)
-
 enum 
 {
   item_offset_name_1 = 0x000,
@@ -104,24 +82,31 @@ enum
   item_offset_spell_effect = 0x0B6, // byte
   item_offset_phys_effect = 0x0B8, // byte
   item_offset_armour = 0x0B4,
+  item_offset_percent_damage = 0x0BC,
   item_offset_percent_hit = 0x0BE,
   item_offset_percent_armour = 0x0C0,
-  item_offset_spell_increase = 0x0C4,
   item_offset_x_loc = 0x17C,
   item_offset_y_loc = 0x180,
+  item_offset_spell_increase = 0x0C4, 
+  item_offset_spell_id = 196,       // level increase / book type
   item_offset_str = 198,            // int16
   item_offset_mag = 200,            // 
   item_offset_dex = 202,            // 
   item_offset_vit = 204,            // 
   item_offset_fire_resist = 206,    // 
   item_offset_poison_resist = 208,  // 
-  item_offset_magic_resist = 210,   // int16
-  item_offset_mana = 212,           // int16
-  item_offset_health = 214,         // int16
-  item_offset_light_radius = 216,   // int16
-  item_offset_min_add_dmg = 218,    // int16
-  item_offset_max_add_dmg = 220,    // int16
+  item_offset_magic_resist = 210,
+  item_offset_mana = 212,
+  item_offset_health = 214,
+  item_offset_light_radius = 216,
+  item_offset_min_add_dmg = 218,
+  item_offset_max_add_dmg = 220,
+  item_offset_req_str = 226,
+  item_offset_req_mag = 228,
+  item_offset_req_dex = 230,
+  item_offset_req_vit = 232,
   item_offset_max_durability = 240,    // int16
+  item_offset_item_id = 266,    // int32
 };
 
 #define ITEM_NAME_LEN 0x20
@@ -159,5 +144,7 @@ void trainer_get_inventory(trainer_data_t *trainer);
 void trainer_get_inventory_loc(trainer_data_t *trainer, uint8_t x, uint8_t y);
 void trainer_get_map(trainer_data_t *trainer);
 void trainer_inventory_delete_item_name(trainer_data_t *trainer, char *item_name);
+
+void trainer_inventory_add_gold(trainer_data_t *trainer);
 
 #endif // TRAINER_H
