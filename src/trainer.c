@@ -385,8 +385,8 @@ void trainer_set_char_spells(trainer_data_t *trainer)
 
       // Also reset the remaining buff timer when changing any skill/spell
       uint8_t timer_remaining[4] = {0};
-      trainer_set_block(trainer, (LPVOID)((UINT_PTR)trainer->spell_address + (UINT_PTR)spellAddressOffset[spell-1]) + SPELL_TIMER_OFFSET, timer_remaining, sizeof(timer_remaining));
-      DEBUG_PRINT("Timer address: %p\n",(LPVOID)((UINT_PTR)trainer->spell_address + (UINT_PTR)spellAddressOffset[spell-1]) + SPELL_TIMER_OFFSET);
+      trainer_set_block(trainer, (LPVOID)((UINT_PTR)trainer->spell_address + (UINT_PTR)spellAddressOffset[spell-1] + (UINT_PTR)SPELL_TIMER_OFFSET), timer_remaining, sizeof(timer_remaining));
+      DEBUG_PRINT("Timer address: %p\n",(LPVOID)((UINT_PTR)trainer->spell_address + (UINT_PTR)spellAddressOffset[spell-1]) + (UINT_PTR)SPELL_TIMER_OFFSET);
     }
     else if (spell != 0)
     {
@@ -489,7 +489,7 @@ void trainer_set_char_skills(trainer_data_t *trainer)
 
       // Also reset the remaining buff timer when changing any skill/spell
       uint8_t timer_remaining[4] = {0};
-      trainer_set_block(trainer, (LPVOID)((UINT_PTR)trainer->spell_address + (UINT_PTR)skillAddressOffset[skill-1]) + SPELL_TIMER_OFFSET, timer_remaining, sizeof(timer_remaining));
+      trainer_set_block(trainer, (LPVOID)((UINT_PTR)trainer->spell_address + (UINT_PTR)skillAddressOffset[skill-1] + (UINT_PTR)SPELL_TIMER_OFFSET), timer_remaining, sizeof(timer_remaining));
       DEBUG_PRINT("Timer address: %p\n",(LPVOID)((UINT_PTR)trainer->spell_address + (UINT_PTR)skillAddressOffset[skill-1]) + SPELL_TIMER_OFFSET);
     }
     else if (skill != 0)
@@ -507,13 +507,13 @@ void trainer_inventory_delete_item_name(trainer_data_t *trainer, char *item_name
   for (UINT_PTR i = 0; i < MAX_ITEM_COUNT; i++)
   {
     item_offset = (LPVOID)(i * ITEM_STRUCT_SIZE);
-    LPVOID item_address = (UINT_PTR)trainer->inventory_address + item_offset;
+    LPVOID item_address = (LPVOID)((UINT_PTR)trainer->inventory_address + (UINT_PTR)item_offset);
     trainer_get_value(trainer, trainer->inventory_address, item_offset, (uint8_t*)&temp_item, sizeof(temp_item));
 
     if (strcmp(temp_item.name1, item_name) == 0)
     {
       trainer_set_block(trainer, item_address, null_item, ITEM_STRUCT_SIZE);
-      printf("Deleted %s at item index %"PRId64"\n", item_name, i);
+      printf("Deleted %s at item index %" PRId64 "\n", item_name, i);
     }
   }
 }
@@ -550,7 +550,7 @@ void trainer_get_inventory(trainer_data_t *trainer)
     
     if (temp_item.name1[0])
     {
-      printf("id: %"PRId64"\n", i);
+      printf("id: %" PRId64 "\n", i);
       printf("Item name: %s\n", temp_item.name1);
       printf("Item name2: %s\n", temp_item.name2);
       printf("Item name3: %s\n", temp_item.name3);
@@ -577,7 +577,7 @@ void trainer_set_weapon_stats(trainer_data_t *trainer)
   int16_t stat = 1;
   int16_t value = 101;
 
-  LPVOID weapon_offset = (LPVOID)(trainer->equip_address + EQUIP_HAND_L * ITEM_STRUCT_SIZE);
+  LPVOID weapon_offset = (LPVOID)((UINT_PTR)trainer->equip_address + (UINT_PTR)(EQUIP_HAND_L * ITEM_STRUCT_SIZE));
 
   LPVOID weaponStatOffset[] = 
   {
@@ -671,7 +671,7 @@ void trainer_get_equip_stats(trainer_data_t *trainer)
     
     if (temp_item.name1[0])
     {
-      printf("id: %"PRId64"\n", i);
+      printf("id: %" PRId64 "\n", i);
       printf("Item name: %s\n", temp_item.name1);
       printf("Item name2: %s\n", temp_item.name2);
       printf("Item name3: %s\n", temp_item.name3);

@@ -1,13 +1,21 @@
-OBJS = .\src\main.c .\src\trainer.c
-CC = gcc
-INCLUDE_PATHS = -Iinclude -Isrc
+CC = g++
+INCLUDE_PATHS = -Iinclude
 LIBRARY_PATHS = 
-COMPILER_FLAGS = -std=c11 -static-libgcc -Wl,-Bstatic -lgcc
+COMPILER_FLAGS = 
+#COMPILER_FLAGS = -std=c11 -static-libgcc -Wl,-Bstatic -lgcc
 LINKER_FLAGS = 
-OBJ_NAME = trainer
+EXE = trainer.exe
+SRC := $(wildcard src/*.c)
+OBJS := $(patsubst src/%.c, build/%.o, $(SRC))
 
-all : $(OBJS)
-	$(CC) $(OBJS) $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(OBJ_NAME)
+all : $(EXE)
+
+$(EXE) : $(OBJS)
+	$(CC) $(OBJS) $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(EXE)
+
+build/%.o : src/%.c
+	mkdir -p build
+	$(CC) -c $< $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $@
 
 clean:
-	rm *.exe *.o
+	rm -rf trainer.exe build/*.o
