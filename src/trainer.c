@@ -13,8 +13,8 @@
 #define INVENTORY_HEIGHT  8
 
 DarkstoneTrainer::DarkstoneTrainer()
-  : mDarkstoneProcess()
-  , mDarkstoneVersion(-1)
+  : mDarkstoneVersion(GAME_VERSION_COUNT)
+  , mDarkstoneProcess()
 {
   if ((mDarkstoneProcess.getIdFromWindow("DarkStone DSI")) == 0)
   {
@@ -26,7 +26,7 @@ DarkstoneTrainer::DarkstoneTrainer()
     mCharBaseAddress = (LPVOID)0x00AF9F4E;
     mSpellBaseAddress = (LPVOID)0x00AFA034;
     mCursorItemBaseAddress = (LPVOID)0x009BC2A8;
-    printf("Found DarkStone DSI window\n");
+    std::cout << "Found DarkStone DSI window\n";
   }
   else if ((mDarkstoneProcess.getIdFromWindow("DarkStone")) == 0)
   {
@@ -38,7 +38,7 @@ DarkstoneTrainer::DarkstoneTrainer()
     mCharBaseAddress = (LPVOID)0x00AFA0FE;
     mSpellBaseAddress = (LPVOID)0x00AFA1E4;
     mCursorItemBaseAddress = (LPVOID)0x0;
-    printf("Found DarkStone window\n");
+    std::cout << "Found DarkStone window\n";
   }
   else
   {
@@ -61,12 +61,12 @@ void DarkstoneTrainer::showMenu()
 
   while (selection != 0)
   {
-    printf("\nSelect a stat to modify\n");
-    printf("1: Character Stats\n");
-    printf("2: Character Spells\n");
-    printf("3: Character Skills\n");
-    printf("4: Weapon Stats\n");
-    printf("0: Exit\n");
+    std::cout << "\nSelect a stat to modify\n";
+    std::cout << "1: Character Stats\n";
+    std::cout << "2: Character Spells\n";
+    std::cout << "3: Character Skills\n";
+    std::cout << "4: Weapon Stats\n";
+    std::cout << "0: Exit\n";
 
     std::cin >> selection;
     switch (selection)
@@ -289,3 +289,4 @@ int DarkstoneTrainer::setMemoryBlock(LPVOID pBaseAddr, LPVOID pAddrOffset, char 
 {
   return mDarkstoneProcess.writeMemoryBlock((LPVOID)((UINT_PTR)pBaseAddr + (UINT_PTR)pAddrOffset), pValue, nBytes);
 }
+

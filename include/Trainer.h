@@ -11,21 +11,22 @@
 class DarkstoneTrainer
 {
   private:
+    enum GameVersion
+    {
+      GAME_VERSION_GOG,
+      GAME_VERSION_STEAM,
+      GAME_VERSION_COUNT
+    };
+
+    GameVersion mDarkstoneVersion;
     ProcessInfo mDarkstoneProcess;
-    int mDarkstoneVersion;
+
     LPVOID mEquipBaseAddress;
     LPVOID mInventoryBaseAddress;
     LPVOID mInventoryMapBaseAddress;
     LPVOID mCharBaseAddress;
     LPVOID mSpellBaseAddress;
     LPVOID mCursorItemBaseAddress;
-
-    enum
-    {
-      GAME_VERSION_GOG,
-      GAME_VERSION_STEAM,
-      GAME_VERSION_COUNT
-    };
 
   public:
     DarkstoneTrainer();
@@ -135,7 +136,7 @@ namespace DarkstoneOffsets
     (LPVOID)0x1E0,   // 31: telekinesis
     (LPVOID)0x1F0,   // 32: light
     (LPVOID)0x000,   // not used
-    (LPVOID)0x00C,   //   : time remaining for spell
+    (LPVOID)0x00C,   // time remaining for spell
   };
 
   enum 
@@ -191,7 +192,7 @@ namespace DarkstoneOffsets
     (LPVOID)0x340,   // 20: Language
     (LPVOID)0x350,   // 21: Lycanthropy
     (LPVOID)0x000,   // not used
-    (LPVOID)0x00C,   //   : time remaining for skill
+    (LPVOID)0x00C,   // time remaining for skill
   };
 
   enum 
@@ -282,20 +283,6 @@ namespace DarkstoneOffsets
     uint8_t   x_loc;                              // 0x17C
     uint8_t   y_loc;                              // 0x180
   } item_t;
-
-
-  //void trainer_show_menu(trainer_data_t *trainer);
-  //void trainer_set_weapon_stats(trainer_data_t *trainer);
-  //void trainer_set_char_stats(trainer_data_t *trainer);
-  //void trainer_set_char_skills(trainer_data_t *trainer);
-  //void trainer_set_char_spells(trainer_data_t *trainer);
-  //void trainer_get_equip_stats(trainer_data_t *trainer);
-  //void trainer_get_inventory(trainer_data_t *trainer);
-  //void trainer_get_inventory_loc(trainer_data_t *trainer, uint8_t x, uint8_t y);
-  //void trainer_get_map(trainer_data_t *trainer);
-  //void trainer_inventory_delete_item_name(trainer_data_t *trainer, char *item_name);
-
-  //void trainer_inventory_add_gold(trainer_data_t *trainer);
-
 }
+
 #endif // TRAINER_H
