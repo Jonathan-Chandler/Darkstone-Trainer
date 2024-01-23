@@ -1,8 +1,8 @@
 CC = g++
 INCLUDE_PATHS = -Iinc
 LIBRARY_PATHS = 
-COMPILER_FLAGS = 
-#COMPILER_FLAGS = -std=c11 -static-libgcc -Wl,-Bstatic -lgcc
+#COMPILER_FLAGS = 
+COMPILER_FLAGS = -std=c11 -static-libgcc -Wl,-Bstatic -lgcc
 LINKER_FLAGS = 
 EXE = trainer.exe
 SRC := $(wildcard src/*.cpp)
