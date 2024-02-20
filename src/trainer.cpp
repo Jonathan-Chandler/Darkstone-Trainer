@@ -105,6 +105,7 @@ void DarkstoneTrainer::showCharacterStatsMenu()
     std::cout << "4: Dexterity\n";
     std::cout << "5: Vitality\n";
     std::cout << "6: Remaining Stat Points\n";
+    std::cout << "7: Age\n";
     std::cout << "0: Return to main menu\n";
 
     // stat id
@@ -119,6 +120,10 @@ void DarkstoneTrainer::showCharacterStatsMenu()
     std::cin >> value;
 
     setValue(mCharBaseAddress, DarkstoneOffsets::pCharacterStatOffset[stat], value);
+
+    // match second value to age
+    if (stat == DarkstoneOffsets::CHAR_STAT_AGE)
+      setValue(mCharBaseAddress, (LPVOID)((uint32_t)DarkstoneOffsets::pCharacterStatOffset[stat]+4), value);
   }
 }
 

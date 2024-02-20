@@ -51,6 +51,7 @@ namespace DarkstoneOffsets
     CHAR_STAT_DEXTERITY,
     CHAR_STAT_VITALITY,
     CHAR_STAT_REMAINING_POINTS,
+    CHAR_STAT_AGE,
     CHAR_STAT_COUNT
   };
   static const LPVOID pCharacterStatOffset[] = 
@@ -61,6 +62,7 @@ namespace DarkstoneOffsets
     (LPVOID)0x4,
     (LPVOID)0x6,
     (LPVOID)0x5e,
+    (LPVOID)0x74,
   };
 
   enum 
