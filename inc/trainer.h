@@ -262,6 +262,7 @@ namespace DarkstoneOffsets
     (LPVOID) item_offset_phys_effect,
     (LPVOID) item_offset_percent_hit,
     (LPVOID) item_offset_max_durability,
+    (LPVOID) item_offset_gold,
   };
 
 #define ITEM_NAME_LEN 0x20

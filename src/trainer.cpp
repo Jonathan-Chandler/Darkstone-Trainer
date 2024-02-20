@@ -256,6 +256,7 @@ void DarkstoneTrainer::showWeaponStatsMenu()
 {
   int16_t stat = 1;
   int16_t value = 101;
+  int32_t value32;
   LPVOID pMainWeaponOffset = (LPVOID)((UINT_PTR)mEquipBaseAddress + (UINT_PTR)(DarkstoneOffsets::EQUIP_HAND_L * DarkstoneOffsets::ITEM_STRUCT_SIZE));
 
   while (stat >= 0)
@@ -267,6 +268,7 @@ void DarkstoneTrainer::showWeaponStatsMenu()
     std::cout << "4: Physical Effect\n";
     std::cout << "5: Percent Hit Increase\n";
     std::cout << "6: Max Durability (use negative values for indestructible)\n";
+    std::cout << "7: Gold Value\n";
     std::cout << "0: Return to main menu\n";
  
     // stat id
@@ -275,13 +277,23 @@ void DarkstoneTrainer::showWeaponStatsMenu()
     if (stat < 0 || stat >= sizeof(DarkstoneOffsets::pSetWeaponStatMenuOffset)/sizeof(DarkstoneOffsets::pSetWeaponStatMenuOffset[0]))
       return;
 
-    // value
-    std::cout << "Enter a value (-32768 through 32767): ";
-    std::cin >> value;
+    if (stat == 6)
+    {
+      std::cout << "Enter a value (-2,147,483,648 through 2,147,483,647): ";
+      std::cin >> value32;
 
-    // write
-    if (setValue(pMainWeaponOffset, DarkstoneOffsets::pSetWeaponStatMenuOffset[stat], value) < 0)
-      debug_error("Fail to set weapon stat");
+      if (setMemoryBlock(pMainWeaponOffset, DarkstoneOffsets::pSetWeaponStatMenuOffset[stat], (char*)&value32, sizeof(value32)) < 0)
+        debug_error("Fail to set weapon gold stat");
+    }
+    else
+    {
+      std::cout << "Enter a value (-32768 through 32767): ";
+      std::cin >> value;
+
+      if (setValue(pMainWeaponOffset, DarkstoneOffsets::pSetWeaponStatMenuOffset[stat], value) < 0)
+        debug_error("Fail to set weapon stat");
+    }
+
   }
 }
 
