@@ -279,7 +279,7 @@ void DarkstoneTrainer::showWeaponStatsMenu()
 
     if (stat == 6)
     {
-      std::cout << "Enter a value (-2,147,483,648 through 2,147,483,647): ";
+      std::cout << "Enter a value (-2147483648 through 2147483647): ";
       std::cin >> value32;
 
       if (setMemoryBlock(pMainWeaponOffset, DarkstoneOffsets::pSetWeaponStatMenuOffset[stat], (char*)&value32, sizeof(value32)) < 0)
