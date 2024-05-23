@@ -21,6 +21,7 @@ class DarkstoneTrainer
     GameVersion mDarkstoneVersion;
     ProcessInfo mDarkstoneProcess;
 
+    int mCurrentPlayer;
     LPVOID mEquipBaseAddress;
     LPVOID mInventoryBaseAddress;
     LPVOID mInventoryMapBaseAddress;
@@ -32,10 +33,15 @@ class DarkstoneTrainer
     DarkstoneTrainer();
 
     void showMenu();
+    void showPlayerSelectMenu();
     void showCharacterStatsMenu();
     void showCharacterSpellsMenu();
     void showCharacterSkillsMenu();
     void showWeaponStatsMenu();
+
+    int    getCurrentPlayer();
+    void   setCurrentPlayer(int player);
+    LPVOID getPlayerBaseAddr(LPVOID pBaseAddr);
 
     int setValue(LPVOID pBaseAddr, LPVOID pAddrOffset, int16_t value);
     int setMemoryBlock(LPVOID pBaseAddr, LPVOID pAddrOffset, char *pValue, SIZE_T nBytes);
@@ -43,6 +49,8 @@ class DarkstoneTrainer
 
 namespace DarkstoneOffsets
 {
+  static const LPVOID PLAYER_2_OFFSET = (LPVOID)0x7554;
+
   enum
   {
     CHAR_STAT_LEVEL,

@@ -15,6 +15,7 @@
 DarkstoneTrainer::DarkstoneTrainer()
   : mDarkstoneVersion(GAME_VERSION_COUNT)
   , mDarkstoneProcess()
+  , mCurrentPlayer(0)
 {
   if ((mDarkstoneProcess.getIdFromWindow("DarkStone DSI")) == 0)
   {
@@ -61,11 +62,12 @@ void DarkstoneTrainer::showMenu()
 
   while (selection != 0)
   {
-    std::cout << "\nSelect a stat to modify\n";
-    std::cout << "1: Character Stats\n";
-    std::cout << "2: Character Spells\n";
-    std::cout << "3: Character Skills\n";
-    std::cout << "4: Weapon Stats\n";
+    std::cout << "\nSelect a stat to modify for player " << getCurrentPlayer() << " (or use option 1 to select which player to edit)" << std::endl;
+    std::cout << "1: Select player\n";
+    std::cout << "2: Character Stats\n";
+    std::cout << "3: Character Spells\n";
+    std::cout << "4: Character Skills\n";
+    std::cout << "5: Weapon Stats\n";
     std::cout << "0: Exit\n";
 
     std::cin >> selection;
@@ -74,15 +76,18 @@ void DarkstoneTrainer::showMenu()
       case 0:
         return;
       case 1:
-        showCharacterStatsMenu();
+        showPlayerSelectMenu();
         break;
       case 2:
-        showCharacterSpellsMenu();
+        showCharacterStatsMenu();
         break;
       case 3:
-        showCharacterSkillsMenu();
+        showCharacterSpellsMenu();
         break;
       case 4:
+        showCharacterSkillsMenu();
+        break;
+      case 5:
         showWeaponStatsMenu();
         break;
       default:
@@ -98,7 +103,7 @@ void DarkstoneTrainer::showCharacterStatsMenu()
 
   while (stat >= 0)
   {
-    std::cout << "\nSelect character stat: \n";
+    std::cout << "\nSelect player " << getCurrentPlayer() << " character stat: \n";
     std::cout << "1: Level\n";
     std::cout << "2: Strength\n";
     std::cout << "3: Magic\n";
@@ -167,7 +172,7 @@ void DarkstoneTrainer::showCharacterSpellsMenu()
     std::cout << "30: Resurrection\n";
     std::cout << "31: Telekinesis\n";
     std::cout << "32: Light\n";
-    std::cout << "0: Return to main menu\n";
+    std::cout << " 0: Return to main menu\n";
 
     // spell id
     std::cin >> spell;
@@ -201,7 +206,7 @@ void DarkstoneTrainer::showCharacterSkillsMenu()
 
   while (skill >= 0)
   {
-    std::cout << "\nSelect skill level to modify: \n";
+    std::cout << "\nSelect player " << getCurrentPlayer() << " skill level to modify: \n";
     std::cout << " 1: Identification\n";
     std::cout << " 2: Trade\n";
     std::cout << " 3: Repair\n";
@@ -224,7 +229,7 @@ void DarkstoneTrainer::showCharacterSkillsMenu()
     std::cout << "20: Communion (Wizard)\n";
     std::cout << "21: Language\n";
     std::cout << "22: Lycanthropy\n";
-    std::cout << "0: Return to main menu\n";
+    std::cout << " 0: Return to main menu\n";
 
     // get skill #
     std::cin >> skill;
@@ -261,7 +266,7 @@ void DarkstoneTrainer::showWeaponStatsMenu()
 
   while (stat >= 0)
   {
-    std::cout << "\nSelect weapon stat: \n";
+    std::cout << "\nSelect player " << getCurrentPlayer() << " weapon stat: \n";
     std::cout << "1: Min Damage\n";
     std::cout << "2: Max Damage\n";
     std::cout << "3: Spell Effect\n";
@@ -297,13 +302,42 @@ void DarkstoneTrainer::showWeaponStatsMenu()
   }
 }
 
+void DarkstoneTrainer::showPlayerSelectMenu()
+{
+  int value;
+
+  std::cout << "\nSelect which player to edit (1 or 2): ";
+  std::cin >> value;
+
+  setCurrentPlayer(value);
+}
+
+void DarkstoneTrainer::setCurrentPlayer(int player)
+{
+  if (player <= 1)
+    mCurrentPlayer = 0;
+  else
+    mCurrentPlayer = 1;
+}
+
+int DarkstoneTrainer::getCurrentPlayer()
+{
+  return mCurrentPlayer+1;
+}
+
+LPVOID DarkstoneTrainer::getPlayerBaseAddr(LPVOID pBaseAddr)
+{
+  uint32_t currentBase = (uint32_t)pBaseAddr + ((uint32_t)DarkstoneOffsets::PLAYER_2_OFFSET * mCurrentPlayer);
+  return (LPVOID)currentBase;
+}
+
 int DarkstoneTrainer::setValue(LPVOID pBaseAddr, LPVOID pAddrOffset, int16_t value)
 {
-  return mDarkstoneProcess.writeMemory((LPVOID)((UINT_PTR)pBaseAddr + (UINT_PTR)pAddrOffset), &value);
+  return mDarkstoneProcess.writeMemory((LPVOID)((UINT_PTR)getPlayerBaseAddr(pBaseAddr) + (UINT_PTR)pAddrOffset), &value);
 }
 
 int DarkstoneTrainer::setMemoryBlock(LPVOID pBaseAddr, LPVOID pAddrOffset, char *pValue, SIZE_T nBytes)
 {
-  return mDarkstoneProcess.writeMemoryBlock((LPVOID)((UINT_PTR)pBaseAddr + (UINT_PTR)pAddrOffset), pValue, nBytes);
+  return mDarkstoneProcess.writeMemoryBlock((LPVOID)((UINT_PTR)getPlayerBaseAddr(pBaseAddr) + (UINT_PTR)pAddrOffset), pValue, nBytes);
 }
 
