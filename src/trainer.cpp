@@ -266,6 +266,7 @@ void DarkstoneTrainer::showWeaponStatsMenu()
 
   while (stat >= 0)
   {
+begin_loop:
     std::cout << "\nSelect player " << getCurrentPlayer() << " weapon stat: \n";
     std::cout << "1: Min Damage\n";
     std::cout << "2: Max Damage\n";
@@ -275,30 +276,84 @@ void DarkstoneTrainer::showWeaponStatsMenu()
     std::cout << "6: Max Durability (use negative values for indestructible)\n";
     std::cout << "7: Gold Value\n";
     std::cout << "0: Return to main menu\n";
- 
+
     // stat id
     std::cin >> stat;
     stat -= 1;
     if (stat < 0 || stat >= sizeof(DarkstoneOffsets::pSetWeaponStatMenuOffset)/sizeof(DarkstoneOffsets::pSetWeaponStatMenuOffset[0]))
       return;
 
-    if (stat == 6)
+    switch (stat)
     {
-      std::cout << "Enter a value (-2147483648 through 2147483647): ";
-      std::cin >> value32;
+      case 2:
+        // List known spell effects
+        std::cout << "Choose A Spell Effect:\n";
+        std::cout << "0: None\n";
+        std::cout << "1: Poison\n";
+        std::cout << "2: Fire Element\n";
+        std::cout << "3: Vampire: Steals 20% Life Points\n";
+        std::cout << "4: Magic Missiles\n";
+        std::cout << "5: Storm\n";
+        std::cout << "6: Stone Curse\n";
+        std::cout << "7: Touch of Confusion\n";
+        std::cout << "Enter a value (-2147483648 through 2147483647): ";
+        std::cin >> value;
+        break;
 
-      if (setMemoryBlock(pMainWeaponOffset, DarkstoneOffsets::pSetWeaponStatMenuOffset[stat], (char*)&value32, sizeof(value32)) < 0)
-        debug_error("Fail to set weapon gold stat");
+      case 3:
+        // uses a bitfield:
+        // 00 0001 - push target back
+        // 00 0010 - fast attack (overrides faster and fastest attack)
+        // 00 0100 - faster attack (overrides fastest attack)
+        // 00 1000 - fastest attack
+        // 01 0000 - recovery time improved (overrides quick recovery)
+        // 10 0000 - quick recovery
+        std::cout << "Choose A Physical Effect:\n";
+        std::cout << "0: None\n";
+        std::cout << "1: Push Target Back\n";                                               // 000 0001
+        std::cout << "2: Fast Attack\n";                                                    // 000 0010
+        std::cout << "3: Push Target Back + Fast Attack\n";                                 // 000 0011
+        std::cout << "4: Faster Attack\n";                                                  // 000 0100
+        std::cout << "5: Push Target Back + Faster Attack\n";                               // 000 0101
+        //std::cout << "6: Fast Attack\n";                                                  // 000 0110 - fast attack overrides faster attack
+        //std::cout << "7: Push Target Back + Fast Attack\n";                               // 000 0111 - fast attack overrides faster attack
+        std::cout << "8: Fastest Attack\n";                                                 // 000 1000
+        std::cout << "9: Push Target Back + Fastest Attack\n";                              // 000 1001
+        //std::cout << "10: Fast Attack\n";                                                 // 000 1010
+        //std::cout << "11: Push Target Back + Fast Attack\n";                              // 000 1011
+        //std::cout << "12: Faster Attack\n";                                               // 000 1100 - faster attack overrides fastest attack
+        //std::cout << "13: Push Target Back + Faster Attack\n";                            // 000 1101 - faster attack overrides fastest attack
+        //std::cout << "14: Fast Attack\n";                                                 // 000 1110 - fast attack overrides fastest and faster attack
+        std::cout << "16: Recovery Time Improved\n";                                        // 001 0000
+        std::cout << "25: Push Target Back + Fastest Attack + Recovery Time Improved\n";    // 001 1001
+        std::cout << "32: Quick Recovery\n";                                                // 010 0000
+        std::cout << "33: Push Target Back + Quick Recovery\n";                             // 010 0001
+        std::cout << "40: Fastest Attack + Quick Recovery\n";                               // 010 1000
+        std::cout << "41: Push Target Back + Fastest Attack + Quick Recovery\n";            // 010 1001
+        // std::cout << "48: Recovery Time Improved\n";                                     // 011 0000 - recovery time improved overrides quick recovery time
+        // std::cout << "64: None \n";                                                      // 100 0000 - values >= 64 do nothing
+        std::cout << "Enter a value (-2147483648 through 2147483647): ";
+        std::cin >> value;
+        break;
+
+      case 6:
+        std::cout << "Enter a value (-2147483648 through 2147483647): ";
+        std::cin >> value32;
+
+        // set 32-bit value
+        if (setMemoryBlock(pMainWeaponOffset, DarkstoneOffsets::pSetWeaponStatMenuOffset[stat], (char*)&value32, sizeof(value32)) < 0)
+          debug_error("Fail to set weapon gold stat");
+        goto begin_loop;
+
+      default:
+        std::cout << "Enter a value (-32768 through 32767): ";
+        std::cin >> value;
+        break;
     }
-    else
-    {
-      std::cout << "Enter a value (-32768 through 32767): ";
-      std::cin >> value;
 
-      if (setValue(pMainWeaponOffset, DarkstoneOffsets::pSetWeaponStatMenuOffset[stat], value) < 0)
-        debug_error("Fail to set weapon stat");
-    }
-
+    // set 16-bit value
+    if (setValue(pMainWeaponOffset, DarkstoneOffsets::pSetWeaponStatMenuOffset[stat], value) < 0)
+      debug_error("Fail to set weapon stat");
   }
 }
 
