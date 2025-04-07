@@ -38,6 +38,7 @@ class DarkstoneTrainer
     void showCharacterSpellsMenu();
     void showCharacterSkillsMenu();
     void showWeaponStatsMenu();
+    void showArmorStatsMenu(UINT_PTR armor_offset);
 
     int    getCurrentPlayer();
     void   setCurrentPlayer(int player);
@@ -219,8 +220,8 @@ namespace DarkstoneOffsets
     EQUIP_HAND_R,
     EQUIP_HAND_L,
     EQUIP_CHEST,
-    EQUIP_AMULET_L,
     EQUIP_AMULET_R,
+    EQUIP_AMULET_L,
     EQUIP_COUNT,
   };
 
@@ -235,7 +236,7 @@ namespace DarkstoneOffsets
     item_offset_max_dmg = 0x0B2,
     item_offset_spell_effect = 0x0B6, // byte
     item_offset_phys_effect = 0x0B8, // byte
-    item_offset_armour = 0x0B4,
+    item_offset_armour = 0x0B4, // int16
     item_offset_percent_damage = 0x0BC,
     item_offset_percent_hit = 0x0BE,
     item_offset_percent_armour = 0x0C0,
@@ -271,6 +272,15 @@ namespace DarkstoneOffsets
     (LPVOID) item_offset_percent_hit,
     (LPVOID) item_offset_max_durability,
     (LPVOID) item_offset_gold,
+  };
+  static const LPVOID pSetArmorStatMenuOffset[] = 
+  {
+    (LPVOID) item_offset_gold,
+    (LPVOID) item_offset_armour,
+    (LPVOID) item_offset_spell_effect,
+    (LPVOID) item_offset_phys_effect,
+    (LPVOID) item_offset_percent_hit,
+    (LPVOID) item_offset_max_durability,
   };
 
 #define ITEM_NAME_LEN 0x20
